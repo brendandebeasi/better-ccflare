@@ -39,3 +39,7 @@ test_*.sh
 *.db-wal
 *.db-shm
 .gitnexus
+
+# Local test data with sensitive credentials
+test-data/prod-dump.sql
+test-data/prod.env
