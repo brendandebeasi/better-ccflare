@@ -991,15 +991,18 @@ Available endpoints:
 		);
 	}
 
-	// Start usage polling for Anthropic accounts with token refresh (regardless of paused status)
-	const anthropicAccounts = accounts.filter((a) => a.provider === "anthropic");
-	if (anthropicAccounts.length > 0) {
+	// Start usage polling for Anthropic and Codex accounts with token refresh (regardless of paused status)
+	const oauthAccounts = accounts.filter(
+		(a) => a.provider === "anthropic" || a.provider === "codex",
+	);
+	if (oauthAccounts.length > 0) {
 		log.info(
-			`Found ${anthropicAccounts.length} Anthropic accounts, starting usage polling...`,
+			`Found ${oauthAccounts.length} OAuth accounts (Anthropic/Codex), starting usage polling...`,
 		);
-		for (const [index, account] of anthropicAccounts.entries()) {
+		for (const [index, account] of oauthAccounts.entries()) {
 			log.debug(`Processing account: ${account.name}`, {
 				accountId: account.id,
+				provider: account.provider,
 				hasAccessToken: !!account.access_token,
 				hasRefreshToken: !!account.refresh_token,
 				paused: account.paused,
@@ -1009,13 +1012,10 @@ Available endpoints:
 			});
 
 			if (account.access_token || account.refresh_token) {
-				// Start usage polling with token refresh capability
-				// Usage data fetching should work independently of account paused status
-				// Stagger startup by 5s per account to avoid simultaneous 429s on boot
 				const startupDelayMs = index * 5000;
 				startUsagePollingWithRefresh(account, proxyContext, startupDelayMs);
 				log.info(
-					`Started usage polling for account ${account.name}${startupDelayMs > 0 ? ` (delayed ${startupDelayMs / 1000}s)` : ""}`,
+					`Started usage polling for ${account.provider} account ${account.name}${startupDelayMs > 0 ? ` (delayed ${startupDelayMs / 1000}s)` : ""}`,
 				);
 			} else {
 				log.warn(
@@ -1024,7 +1024,9 @@ Available endpoints:
 			}
 		}
 	} else {
-		log.info(`No Anthropic accounts found, usage polling will not start`);
+		log.info(
+			`No Anthropic/Codex accounts found, usage polling will not start`,
+		);
 	}
 
 	// Start usage polling for NanoGPT accounts (PayG with optional subscription tracking)
