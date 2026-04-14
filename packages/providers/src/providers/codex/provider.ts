@@ -613,9 +613,11 @@ export class CodexProvider extends BaseProvider {
 
 				// Final message_delta + message_stop if upstream never sent response.completed
 				if (!state.hasSentTerminalEvents) {
+					const stopReason =
+						state.functionCallBlocks.size > 0 ? "tool_use" : "end_turn";
 					await writeSSE("message_delta", {
 						type: "message_delta",
-						delta: { stop_reason: "end_turn", stop_sequence: null },
+						delta: { stop_reason: stopReason, stop_sequence: null },
 						usage: { output_tokens: state.outputTokens },
 					});
 					await writeSSE("message_stop", { type: "message_stop" });
@@ -789,9 +791,11 @@ export class CodexProvider extends BaseProvider {
 					state.hasSentContentBlockStart = false;
 				}
 
+				const stopReason =
+					state.functionCallBlocks.size > 0 ? "tool_use" : "end_turn";
 				await writeSSE("message_delta", {
 					type: "message_delta",
-					delta: { stop_reason: "end_turn", stop_sequence: null },
+					delta: { stop_reason: stopReason, stop_sequence: null },
 					usage: { output_tokens: state.outputTokens },
 				});
 				await writeSSE("message_stop", { type: "message_stop" });

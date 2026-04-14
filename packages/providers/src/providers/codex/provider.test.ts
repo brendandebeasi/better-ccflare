@@ -41,6 +41,73 @@ describe("CodexProvider.processResponse", () => {
 		expect(transformedBody.match(/event: message_delta/g)?.length ?? 0).toBe(1);
 	});
 
+	it("emits stop_reason=tool_use when the response contains a function_call", async () => {
+		const provider = new CodexProvider();
+		const upstreamBody = [
+			"event: response.created",
+			'data: {"response":{"id":"resp_tool","model":"gpt-5.3-codex"}}',
+			"",
+			"event: response.output_item.added",
+			'data: {"item":{"type":"function_call","call_id":"call_1","name":"read_file"},"output_index":0}',
+			"",
+			"event: response.function_call_arguments.delta",
+			'data: {"delta":"{\\"path\\":\\"foo\\"}"}',
+			"",
+			"event: response.output_item.done",
+			'data: {"item":{"type":"function_call"}}',
+			"",
+			"event: response.completed",
+			'data: {"response":{"usage":{"input_tokens":1,"output_tokens":1}}}',
+			"",
+		].join("\n");
+
+		const response = new Response(upstreamBody, {
+			status: 200,
+			headers: { "content-type": "application/json" },
+		});
+
+		const transformed = await provider.processResponse(response, null);
+		const transformedBody = await transformed.text();
+
+		expect(transformedBody).toContain('"stop_reason":"tool_use"');
+		expect(transformedBody).not.toContain('"stop_reason":"end_turn"');
+	});
+
+	it("emits stop_reason=end_turn when the response is text-only", async () => {
+		const provider = new CodexProvider();
+		const upstreamBody = [
+			"event: response.created",
+			'data: {"response":{"id":"resp_text","model":"gpt-5.3-codex"}}',
+			"",
+			"event: response.output_item.added",
+			'data: {"item":{"type":"message"},"output_index":0}',
+			"",
+			"event: response.content_part.added",
+			'data: {"part":{"type":"output_text"}}',
+			"",
+			"event: response.output_text.delta",
+			'data: {"delta":"done"}',
+			"",
+			"event: response.output_item.done",
+			'data: {"item":{"type":"message"}}',
+			"",
+			"event: response.completed",
+			'data: {"response":{"usage":{"input_tokens":1,"output_tokens":1}}}',
+			"",
+		].join("\n");
+
+		const response = new Response(upstreamBody, {
+			status: 200,
+			headers: { "content-type": "application/json" },
+		});
+
+		const transformed = await provider.processResponse(response, null);
+		const transformedBody = await transformed.text();
+
+		expect(transformedBody).toContain('"stop_reason":"end_turn"');
+		expect(transformedBody).not.toContain('"stop_reason":"tool_use"');
+	});
+
 	it("passes through non-streaming error responses", async () => {
 		const provider = new CodexProvider();
 		const response = new Response('{"error":"bad_request"}', {
