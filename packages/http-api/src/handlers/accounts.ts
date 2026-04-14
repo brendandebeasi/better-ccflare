@@ -2130,10 +2130,10 @@ export function createAccountReloadHandler(dbOps: DatabaseOperations) {
 				return errorResponse(NotFound("Account not found"));
 			}
 
-			// Check if account is Anthropic provider (only OAuth accounts need token reload)
-			if (account.provider !== "anthropic") {
+			// Check if account is an OAuth provider (Anthropic or Codex)
+			if (account.provider !== "anthropic" && account.provider !== "codex") {
 				return errorResponse(
-					BadRequest("Token reload is only available for Anthropic accounts"),
+					BadRequest("Token reload is only available for OAuth accounts (Anthropic, Codex)"),
 				);
 			}
 
@@ -2900,10 +2900,10 @@ export function createAccountRefreshUsageHandler(dbOps: DatabaseOperations) {
 				return errorResponse(NotFound("Account not found"));
 			}
 
-			if (account.provider !== "anthropic") {
+			if (account.provider !== "anthropic" && account.provider !== "codex") {
 				return errorResponse(
 					BadRequest(
-						"Usage refresh is only available for Anthropic OAuth accounts",
+						"Usage refresh is only available for OAuth accounts (Anthropic, Codex)",
 					),
 				);
 			}
