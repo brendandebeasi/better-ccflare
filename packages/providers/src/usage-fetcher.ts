@@ -256,7 +256,7 @@ class UsageCache {
 				? retryAfterMs
 				: failures === 0
 					? baseIntervalMs
-					: Math.min(baseIntervalMs * 2 ** failures, 30 * 60 * 1000);
+					: Math.min(baseIntervalMs * 2 ** failures, 2 * 60 * 60 * 1000);
 
 		if (failures > 0) {
 			log.info(
