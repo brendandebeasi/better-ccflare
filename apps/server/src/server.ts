@@ -776,7 +776,8 @@ export default async function startServer(options?: {
 					// This allows React Router to handle all dashboard routes without maintaining a list
 					if (
 						!url.pathname.startsWith("/api/") &&
-						!url.pathname.startsWith("/v1/")
+						!url.pathname.startsWith("/v1/") &&
+						!url.pathname.startsWith("/backend-api/")
 					) {
 						return serveDashboardFile("/index.html", "text/html");
 					}
