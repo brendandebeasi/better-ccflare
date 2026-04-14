@@ -4,6 +4,8 @@
 export * from "./alibaba-coding-plan-usage-fetcher";
 // Export base provider class
 export { BaseProvider } from "./base";
+// Export Codex usage fetcher and header parser
+export * from "./codex-usage-fetcher";
 // Export Kilo usage fetcher
 export * from "./kilo-usage-fetcher";
 // Export NanoGPT usage fetcher
@@ -17,6 +19,7 @@ export {
 	createProviderForService,
 	PresetProviders,
 } from "./providers/anthropic-compatible/factory";
+export { parseCodexUsageHeaders } from "./providers/codex/usage";
 // Export providers
 export * from "./providers/index";
 // Export registry functions

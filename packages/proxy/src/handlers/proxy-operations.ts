@@ -1,6 +1,10 @@
 import { logError, ProviderError } from "@better-ccflare/core";
 import { Logger } from "@better-ccflare/logger";
-import { getProvider } from "@better-ccflare/providers";
+import {
+	getProvider,
+	parseCodexUsageHeaders,
+	usageCache,
+} from "@better-ccflare/providers";
 import type { Account, RequestMeta } from "@better-ccflare/types";
 import { forwardToClient } from "../response-handler";
 import { ERROR_MESSAGES, type ProxyContext } from "./proxy-types";
@@ -411,6 +415,17 @@ export async function proxyWithAccount(
 		const response = passthrough
 			? rawResponse
 			: await provider.processResponse(rawResponse, account);
+
+		// Parse Codex usage headers from passthrough responses (no body transformation needed)
+		if (passthrough && account.provider === "codex") {
+			const codexUsage = parseCodexUsageHeaders(response.headers);
+			if (codexUsage) {
+				usageCache.set(account.id, codexUsage);
+				log.info(
+					`Codex passthrough usage for ${account.name}: 5h=${codexUsage.five_hour.utilization}%, 7d=${codexUsage.seven_day.utilization}%`,
+				);
+			}
+		}
 
 		if (response.status === 401) {
 			log.warn(

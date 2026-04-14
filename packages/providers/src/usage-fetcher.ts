@@ -7,6 +7,7 @@ import {
 	getRepresentativeAlibabaCodingPlanUtilization,
 	getRepresentativeAlibabaCodingPlanWindow,
 } from "./alibaba-coding-plan-usage-fetcher";
+import { fetchCodexUsageData } from "./codex-usage-fetcher";
 import {
 	fetchKiloUsageData,
 	getRepresentativeKiloUtilization,
@@ -521,6 +522,17 @@ class UsageCache {
 					);
 					log.debug(
 						`Successfully fetched Alibaba Coding Plan usage data for account ${accountId}: ${utilization?.toFixed(1)}% used (${window} window)`,
+					);
+					return { success: true, retryAfterMs: null };
+				}
+			} else if (provider === "codex") {
+				data = await fetchCodexUsageData(token);
+				if (data) {
+					this.cache.set(accountId, { data, timestamp: Date.now() });
+					const utilization = getRepresentativeUtilization(data as UsageData);
+					const window = getRepresentativeWindow(data as UsageData);
+					log.debug(
+						`Successfully fetched Codex usage data for account ${accountId}: ${utilization}% (${window} window)`,
 					);
 					return { success: true, retryAfterMs: null };
 				}
