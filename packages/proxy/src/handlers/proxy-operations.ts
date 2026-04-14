@@ -317,20 +317,32 @@ export async function proxyWithAccount(
 		// Validate that the account-specific provider can handle this path
 		validateProviderPath(provider, url.pathname);
 
+		const passthrough = provider.isPassthrough?.(url.pathname) ?? false;
+
 		// Get valid access token
 		const accessToken = await getValidAccessToken(account, ctx);
 
 		// Pre-process request if provider supports it (e.g., to extract model for URL)
-		if (provider.prepareRequest) {
+		if (!passthrough && provider.prepareRequest) {
 			provider.prepareRequest(req, requestBodyBuffer, account);
 		}
 
-		// Prepare request using account-specific provider
-		const headers = provider.prepareHeaders(
-			req.headers,
-			accessToken,
-			account.api_key || undefined,
-		);
+		// Prepare headers: in passthrough just inject bearer token, otherwise full provider transform
+		let headers: Headers;
+		if (passthrough) {
+			headers = new Headers(req.headers);
+			headers.delete("authorization");
+			headers.delete("host");
+			if (accessToken) {
+				headers.set("Authorization", `Bearer ${accessToken}`);
+			}
+		} else {
+			headers = provider.prepareHeaders(
+				req.headers,
+				accessToken,
+				account.api_key || undefined,
+			);
+		}
 		const targetUrl = provider.buildUrl(url.pathname, url.search, account);
 
 		const requestInit: RequestInit & { duplex?: "half" } = {
@@ -344,9 +356,10 @@ export async function proxyWithAccount(
 
 		const providerRequest = new Request(targetUrl, requestInit);
 
-		const transformedRequest = provider.transformRequestBody
-			? await provider.transformRequestBody(providerRequest, account)
-			: providerRequest;
+		const transformedRequest =
+			!passthrough && provider.transformRequestBody
+				? await provider.transformRequestBody(providerRequest, account)
+				: providerRequest;
 
 		// Make the request (or unwrap a synthetic provider response)
 		let rawResponse = isSyntheticProviderResponse(transformedRequest)
@@ -355,7 +368,8 @@ export async function proxyWithAccount(
 
 		// Check if this is a Claude provider and we got an invalid thinking signature error
 		const isClaudeProvider =
-			provider.name === "anthropic" || account.provider === "claude-oauth";
+			!passthrough &&
+			(provider.name === "anthropic" || account.provider === "claude-oauth");
 		if (
 			isClaudeProvider &&
 			(await isInvalidThinkingSignatureError(rawResponse))
@@ -393,8 +407,10 @@ export async function proxyWithAccount(
 			}
 		}
 
-		// Process response (transform format, sanitize headers, etc.) using account-specific provider
-		const response = await provider.processResponse(rawResponse, account);
+		// Process response: passthrough returns as-is, otherwise apply provider transforms
+		const response = passthrough
+			? rawResponse
+			: await provider.processResponse(rawResponse, account);
 
 		if (response.status === 401) {
 			log.warn(

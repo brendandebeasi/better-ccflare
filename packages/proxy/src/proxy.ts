@@ -4,6 +4,7 @@ import {
 	trackClientVersion,
 } from "@better-ccflare/core";
 import { Logger } from "@better-ccflare/logger";
+import { canAnyProviderHandle } from "@better-ccflare/providers";
 import {
 	createRequestMetadata,
 	ERROR_MESSAGES,
@@ -185,8 +186,12 @@ export async function handleProxy(
 	// 1. Track client version from user-agent for use in auto-refresh
 	trackClientVersion(req.headers.get("user-agent"));
 
-	// 2. Validate provider can handle path
-	validateProviderPath(ctx.provider, url.pathname);
+	// 2. Validate provider can handle path (or defer to account-specific providers)
+	if (!ctx.provider.canHandle(url.pathname)) {
+		if (!canAnyProviderHandle(url.pathname)) {
+			validateProviderPath(ctx.provider, url.pathname);
+		}
+	}
 
 	// 3. Prepare request body
 	const { buffer: requestBodyBuffer } = await prepareRequestBody(req);

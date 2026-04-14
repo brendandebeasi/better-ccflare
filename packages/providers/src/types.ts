@@ -113,6 +113,12 @@ export interface Provider {
 	 * Check if the response is a streaming response
 	 */
 	isStreamingResponse?(response: Response): boolean;
+
+	/**
+	 * Check if the given path should be handled in passthrough mode
+	 * (no request/response body transformation, just auth injection + proxy)
+	 */
+	isPassthrough?(path: string): boolean;
 }
 
 // OAuth-specific types

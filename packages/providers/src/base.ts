@@ -152,6 +152,14 @@ export abstract class BaseProvider implements Provider {
 	}
 
 	/**
+	 * Check if the given path should be handled in passthrough mode.
+	 * Default: false (all paths go through request/response transformation).
+	 */
+	isPassthrough(_path: string): boolean {
+		return false;
+	}
+
+	/**
 	 * Check if the response is a streaming response
 	 * Default implementation: Check for text/event-stream or stream in content-type
 	 */

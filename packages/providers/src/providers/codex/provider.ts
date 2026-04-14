@@ -138,8 +138,15 @@ export class CodexProvider extends BaseProvider {
 	name = "codex";
 
 	canHandle(path: string): boolean {
-		// Codex only handles /v1/messages; reject token counting etc.
-		return path === "/v1/messages";
+		return (
+			path === "/v1/messages" ||
+			path.startsWith("/backend-api/codex/") ||
+			path === "/v1/responses"
+		);
+	}
+
+	isPassthrough(path: string): boolean {
+		return path !== "/v1/messages";
 	}
 
 	async refreshToken(
@@ -208,7 +215,23 @@ export class CodexProvider extends BaseProvider {
 		};
 	}
 
-	buildUrl(_path: string, _query: string, account?: Account): string {
+	buildUrl(path: string, query: string, account?: Account): string {
+		if (this.isPassthrough(path)) {
+			const base = account?.custom_endpoint
+				? (() => {
+						try {
+							return validateEndpointUrl(
+								account.custom_endpoint,
+								"custom_endpoint",
+							);
+						} catch {
+							return "https://chatgpt.com";
+						}
+					})()
+				: "https://chatgpt.com";
+			return `${base}${path}${query}`;
+		}
+
 		if (account?.custom_endpoint) {
 			try {
 				return validateEndpointUrl(account.custom_endpoint, "custom_endpoint");

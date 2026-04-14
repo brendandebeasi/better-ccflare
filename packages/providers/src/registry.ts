@@ -83,3 +83,10 @@ export const getOAuthProvider = (name: string) =>
 	registry.getOAuthProvider(name);
 export const listProviders = () => registry.listProviders();
 export const listOAuthProviders = () => registry.listOAuthProviders();
+export const canAnyProviderHandle = (path: string): boolean => {
+	for (const name of registry.listProviders()) {
+		const p = registry.getProvider(name);
+		if (p?.canHandle(path)) return true;
+	}
+	return false;
+};
