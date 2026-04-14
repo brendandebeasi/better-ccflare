@@ -24,9 +24,15 @@ export async function fetchCodexUsageData(
 				originator: "codex_cli_rs",
 			},
 			body: JSON.stringify({
-				model: "gpt-5.1-codex-mini",
-				instructions: "answer briefly",
-				input: [{ type: "message", role: "user", content: "1+1" }],
+				model: "gpt-5.2",
+				instructions: "You are a helpful assistant.",
+				input: [
+					{
+						type: "message",
+						role: "user",
+						content: [{ type: "input_text", text: "hi" }],
+					},
+				],
 				store: false,
 				stream: true,
 			}),
