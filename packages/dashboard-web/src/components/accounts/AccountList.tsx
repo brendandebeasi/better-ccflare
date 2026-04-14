@@ -52,21 +52,21 @@ export function AccountList({
 	return (
 		<div className="space-y-2">
 			{accounts.map((account) => (
-			<AccountListItem
-				key={account.name}
-				account={account}
-				isActive={account.id === mostRecentAccountId}
-				onPauseToggle={onPauseToggle}
-				onForceResetRateLimit={onForceResetRateLimit}
-				onRefreshUsage={onRefreshUsage}
-				onRemove={onRemove}
-				onRename={onRename}
-				onPriorityChange={onPriorityChange}
-				onAutoFallbackToggle={onAutoFallbackToggle}
-				onAutoRefreshToggle={onAutoRefreshToggle}
-				onCustomEndpointChange={onCustomEndpointChange}
-				onModelMappingsChange={onModelMappingsChange}
-			/>
+				<AccountListItem
+					key={account.name}
+					account={account}
+					isActive={account.id === mostRecentAccountId}
+					onPauseToggle={onPauseToggle}
+					onForceResetRateLimit={onForceResetRateLimit}
+					onRefreshUsage={onRefreshUsage}
+					onRemove={onRemove}
+					onRename={onRename}
+					onPriorityChange={onPriorityChange}
+					onAutoFallbackToggle={onAutoFallbackToggle}
+					onAutoRefreshToggle={onAutoRefreshToggle}
+					onCustomEndpointChange={onCustomEndpointChange}
+					onModelMappingsChange={onModelMappingsChange}
+				/>
 			))}
 		</div>
 	);

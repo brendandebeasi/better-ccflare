@@ -11,6 +11,7 @@ const CODEX_ENDPOINT = "https://chatgpt.com/backend-api/codex/responses";
 export async function fetchCodexUsageData(
 	accessToken: string,
 ): Promise<UsageData | null> {
+	const controller = new AbortController();
 	try {
 		const response = await fetch(CODEX_ENDPOINT, {
 			method: "POST",
@@ -24,9 +25,12 @@ export async function fetchCodexUsageData(
 			},
 			body: JSON.stringify({
 				model: "gpt-5.1-codex-mini",
-				input: "1+1",
-				max_output_tokens: 1,
+				instructions: "answer briefly",
+				input: [{ type: "message", role: "user", content: "1+1" }],
+				store: false,
+				stream: true,
 			}),
+			signal: controller.signal,
 		});
 
 		const usage = parseCodexUsageHeaders(response.headers, {
@@ -34,26 +38,25 @@ export async function fetchCodexUsageData(
 		});
 
 		if (usage) {
-			log.debug(
+			log.info(
 				`Codex usage probe: 5h=${usage.five_hour.utilization}%, 7d=${usage.seven_day.utilization}%`,
 			);
 		} else {
-			log.debug(
+			log.info(
 				`Codex usage probe: no usage headers in response (status ${response.status})`,
 			);
 		}
 
-		// Drain response body to avoid resource leak
-		try {
-			await response.text();
-		} catch {
-			// ignore
-		}
+		// Abort the streaming response — we only needed the headers
+		controller.abort();
 
 		return usage;
 	} catch (error) {
+		controller.abort();
 		const msg = error instanceof Error ? error.message : String(error);
-		log.error(`Codex usage probe failed: ${msg}`);
+		if (!msg.includes("abort")) {
+			log.error(`Codex usage probe failed: ${msg}`);
+		}
 		return null;
 	}
 }

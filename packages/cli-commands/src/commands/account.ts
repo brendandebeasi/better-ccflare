@@ -1180,7 +1180,11 @@ export async function addAccount(
 		const finalModelMappings = await promptModelMappings(
 			adapter,
 			modelMappings,
-			{ opus: "gpt-5.3-codex", sonnet: "gpt-5.3-codex", haiku: "gpt-5.1-codex-mini" },
+			{
+				opus: "gpt-5.3-codex",
+				sonnet: "gpt-5.3-codex",
+				haiku: "gpt-5.1-codex-mini",
+			},
 		);
 
 		await createCodexOAuthAccount(

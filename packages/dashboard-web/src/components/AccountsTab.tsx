@@ -509,19 +509,19 @@ export function AccountsTab() {
 						/>
 					)}
 
-				<AccountList
-					accounts={accounts}
-					onPauseToggle={handlePauseToggle}
-					onForceResetRateLimit={handleForceResetRateLimit}
-					onRefreshUsage={handleRefreshUsage}
-					onRemove={handleRemoveAccount}
-					onRename={handleRename}
-					onPriorityChange={handlePriorityChange}
-					onAutoFallbackToggle={handleAutoFallbackToggle}
-					onAutoRefreshToggle={handleAutoRefreshToggle}
-					onCustomEndpointChange={handleCustomEndpointChange}
-					onModelMappingsChange={handleModelMappingsChange}
-				/>
+					<AccountList
+						accounts={accounts}
+						onPauseToggle={handlePauseToggle}
+						onForceResetRateLimit={handleForceResetRateLimit}
+						onRefreshUsage={handleRefreshUsage}
+						onRemove={handleRemoveAccount}
+						onRename={handleRename}
+						onPriorityChange={handlePriorityChange}
+						onAutoFallbackToggle={handleAutoFallbackToggle}
+						onAutoRefreshToggle={handleAutoRefreshToggle}
+						onCustomEndpointChange={handleCustomEndpointChange}
+						onModelMappingsChange={handleModelMappingsChange}
+					/>
 				</CardContent>
 			</Card>
 
