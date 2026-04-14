@@ -1,4 +1,4 @@
-import { CLAUDE_CLI_VERSION } from "@better-ccflare/core";
+import { getClientVersion } from "@better-ccflare/core";
 import { Logger } from "@better-ccflare/logger";
 import { supportsUsageTracking } from "@better-ccflare/types";
 import {
@@ -73,7 +73,7 @@ export async function fetchUsageData(
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 				"anthropic-beta": "oauth-2025-04-20",
-				"User-Agent": `claude-code/${CLAUDE_CLI_VERSION}`,
+				"User-Agent": `claude-cli/${getClientVersion()} (external, cli)`,
 				Accept: "application/json",
 			},
 		});
