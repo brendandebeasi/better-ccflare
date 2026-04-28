@@ -5,16 +5,22 @@ import type { Account } from "@better-ccflare/types";
 import { BaseProvider } from "../../base";
 import type { RateLimitInfo, TokenRefreshResult } from "../../types";
 
-// Hard rate limit statuses that should block account usage
+// Hard rate limit statuses that should block account usage.
+//
+// `allowed_warning` is included even though Anthropic still serves the
+// request: it means subscription quota is exhausted and we're now
+// burning paid extra-usage overage. ccflare should fail over to another
+// account rather than spend overage credits on this one.
+// `rejected` is treated as hard for the same reason — Anthropic refuses
+// the request, no point retrying within the session.
 const HARD_LIMIT_STATUSES = new Set([
 	"rate_limited",
 	"blocked",
 	"queueing_hard",
 	"payment_required",
+	"allowed_warning",
+	"rejected",
 ]);
-
-// Soft warning statuses that should not block account usage
-const _SOFT_WARNING_STATUSES = new Set(["allowed_warning", "queueing_soft"]);
 
 const log = new Logger("AnthropicProvider");
 
